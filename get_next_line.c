@@ -1,5 +1,11 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <stdlib.h>
+
+# ifndef BUFFER_SIZE 
+#  define BUFFER_SIZE 10
+# endif
 
 size_t	ft_strlen(char *str)
 {
@@ -73,17 +79,98 @@ char	*ft_strjoin(char *s1, char *s2)
 		ptr[i] = s2[i - len1];
 		i++;
 	}
-	// free(s1);
+	free(s1);
 	ptr[i] = '\0';
 	return (ptr);
 }
 
-int	main()
+char	*populate_line(int fd, char *str)
 {
-	char	*p;
+	int		bytes;
+	char	*buffer;
+	char	*tmp;
 
-	p = ft_strjoin("banana", "rama");
-	printf("%s", p);
-	free(p);
+	bytes = 1;
+	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	while (bytes)
+	{
+		bytes = read(fd, buffer, BUFFER_SIZE);
+		if (bytes == -1)
+		{
+			free(buffer);
+			if (str)
+				free(str);
+			return (NULL);
+		}
+		if (bytes == 0)
+			break ;
+		buffer[bytes] = '\0';
+		if (!str)
+			str = ft_strdup("");
+		str = ft_strjoin(str, buffer);
+		if (ft_strchr(buffer, '\n'))
+			break ;
+	}
+	free(buffer);
+	return (str);
+}
+
+char	*store_rest(char *line)
+{
+	char	*br_pos;
+	char	*rest;
+
+	if (line == NULL || *line == '\0')
+		return (NULL);
+	br_pos = ft_strchr(line, '\n');
+	if (br_pos == NULL)
+		return (NULL);
+	rest = ft_strdup(++br_pos);
+	if (*rest == '\0')
+	{
+		free(rest);
+		return (NULL);
+	}
+		return (NULL);
+	*br_pos = '\0';
+	return (rest);
+}
+
+char	*get_next_line(int fd)
+{
+	static char	*rest;
+	char		*line;
+
+	if (fd == -1 || BUFFER_SIZE <= 0)
+		return (NULL);
+	line = populate_line(fd, rest);
+	if (!line)
+	{
+		free(rest);
+		rest = NULL;
+		return (NULL);
+	}
+	rest = store_rest(line);
+	return (line);
+}
+
+int	main(int argc, char **argv)
+{
+	char	*line;
+	int		fd;
+
+	if (argc == 2)
+	{
+		fd = open(argv[1], O_RDONLY);
+		line = get_next_line(fd);
+		while (line != NULL)
+		{
+			printf("%s", line);
+			free(line);
+			line = get_next_line(fd);
+		}
+		free(line);
+		close(fd);
+	}
 	return (0);
 }

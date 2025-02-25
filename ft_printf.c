@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdarg.h>
+#include <limits.h>
 
 int	ft_putchar_len(char c)
 {
@@ -22,24 +23,30 @@ int	ft_strlen(char *str)
 	return (len);
 }
 
+void	ft_putstr_len(char *str, int *len)
+{
+	while (*str)
+	{
+		(*len) += ft_putchar_len(*str);
+		str++;
+	}
+}
+
 void	ft_putnbr_len(int nbr, int *len)
 {
-	if (nbr == -2147483647)
+	if (nbr == -2147483648)
 	{
-		nbr = 147483647;
-		ft_putchar_len('-');
-		(*len)++;
+		nbr = 147483648;
+		ft_putstr_len("-2", len);
 	}
 	if (nbr < 0)
 	{
 		nbr *= -1;
-		ft_putchar_len('-');
-		(*len)++;
+		(*len) += ft_putchar_len('-');
 	}
 	if (nbr < 10)
 	{
-		ft_putchar_len(nbr + 48);
-		(*len)++;
+		(*len) += ft_putchar_len(nbr + 48);
 		return ;
 	}
 	ft_putnbr_len(nbr / 10, len);
@@ -52,25 +59,11 @@ void	ft_puthex_len(unsigned int nbr, int *len)
 
 	if (nbr < 16)
 	{
-		ft_putchar_len(hex[nbr]);
-		(*len)++;
+		(*len) += ft_putchar_len(hex[nbr]);
 		return ;
 	}
 	ft_puthex_len(nbr / 16, len);
 	ft_puthex_len(nbr % 16, len);
-}
-
-int	ft_putstr_len(char *str)
-{
-	int	len;
-
-	len = 0;
-	while (*str)
-	{
-		len += ft_putchar_len(*str);
-		str++;
-	}
-	return (len);
 }
 
 int	ft_printf(const char *str, ...)
@@ -94,9 +87,9 @@ int	ft_printf(const char *str, ...)
 			{
 				s = va_arg(arg, char *);
 				if (s == NULL)
-					len = ft_putstr_len("(Null)");
+					ft_putstr_len("(null)", &len);
 				else
-					len = ft_putstr_len(s);
+					ft_putstr_len(s, &len);
 				str++;
 			}
 			if (*str == 'd')
@@ -118,6 +111,7 @@ int	ft_printf(const char *str, ...)
 			str++;
 		}
 	}
+	va_end(arg);
 	return (len);
 }
 
@@ -126,7 +120,8 @@ int	main()
 	int	len;
 	int	l = 0;
 
-	len = ft_printf("%x\n", -123);
+	len = ft_printf(" %d ", INT_MIN);
+	// len = ft_printf("%s %d %d %x %x\n", "Turtles", 123, -123, 123, -123);
 	ft_putnbr_len(len, &l);
 	return (0);
 }

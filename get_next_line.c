@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -22,10 +21,8 @@ size_t	ft_strlen(char *str)
 
 char	*ft_strchr(char *str, int c)
 {
-	int	i;
 	unsigned char uc;
 
-	i = 0;
 	uc = c;
 	while (*str)
 	{
@@ -38,7 +35,7 @@ char	*ft_strchr(char *str, int c)
 
 char	*ft_strdup(char *str)
 {
-	int	i;
+	size_t	i;
 	size_t	len;
 	char	*ptr;
 
@@ -88,7 +85,6 @@ char	*populate_line(int fd, char *str)
 {
 	int		bytes;
 	char	*buffer;
-	char	*tmp;
 
 	bytes = 1;
 	buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
@@ -131,7 +127,6 @@ char	*store_rest(char *line)
 		free(rest);
 		return (NULL);
 	}
-		return (NULL);
 	*br_pos = '\0';
 	return (rest);
 }
@@ -152,25 +147,4 @@ char	*get_next_line(int fd)
 	}
 	rest = store_rest(line);
 	return (line);
-}
-
-int	main(int argc, char **argv)
-{
-	char	*line;
-	int		fd;
-
-	if (argc == 2)
-	{
-		fd = open(argv[1], O_RDONLY);
-		line = get_next_line(fd);
-		while (line != NULL)
-		{
-			printf("%s", line);
-			free(line);
-			line = get_next_line(fd);
-		}
-		free(line);
-		close(fd);
-	}
-	return (0);
 }
